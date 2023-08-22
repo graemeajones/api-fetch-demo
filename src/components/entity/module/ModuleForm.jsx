@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
+import useLoad from '../../api/useLoad.js';
 import Action from '../../UI/Actions.jsx';
 import './ModuleForm.scss';
 
@@ -33,45 +34,14 @@ function ModuleForm({ onCancel, onSuccess }) {
       ModuleImageURL: (value) => (value === null ? '' : value),
     },
   };
-  const apiURL = 'http://localhost:5000/api';
-  const yearsEndpoint = `${apiURL}/years`;
-  const staffEndpoint = `${apiURL}/users/staff`;
-  const postModuleEndpoint = `${apiURL}/modules`;
+  const yearsEndpoint = `/years`;
+  const staffEndpoint = `/users/staff`;
+  const postModuleEndpoint = `/modules`;
 
   // State ---------------------------------------
   const [module, setModule] = useState(initialModule);
-  const [years, setYears] = useState(null);
-  const [staff, setStaff] = useState(null);
-
-  const apiGet = async (endpoint, setState) => {
-    const response = await fetch(endpoint);
-    const result = await response.json();
-    setState(result);
-  };
-
-  const apiPost = async (endpoint, record) => {
-    // Build request object
-    const request = {
-      method: 'POST',
-      body: JSON.stringify(record),
-      headers: { 'Content-type': 'application/json' },
-    };
-
-    // Call the fetch
-    const response = await fetch(endpoint, request);
-    const result = await response.json();
-    return response.status >= 200 && response.status < 300
-      ? { isSuccess: true }
-      : { isSuccess: false, message: result.message };
-  };
-
-  useEffect(() => {
-    apiGet(yearsEndpoint, setYears);
-  }, [yearsEndpoint]);
-
-  useEffect(() => {
-    apiGet(staffEndpoint, setStaff);
-  }, [staffEndpoint]);
+  const [years, , loadingYearsMessage, ] = useLoad(yearsEndpoint);
+  const [staff, , loadingStaffMessage, ] = useLoad(staffEndpoint);
 
   // Handlers ------------------------------------
   const handleChange = (event) => {
@@ -81,7 +51,7 @@ function ModuleForm({ onCancel, onSuccess }) {
 
   const handleSubmit = async () => {
     console.log(`Module=[${JSON.stringify(module)}]`);
-    const result = await apiPost(postModuleEndpoint, module);
+    const result = await API.post(postModuleEndpoint, module);
     if (result.isSuccess) onSuccess();
     else alert(result.message);
   };
@@ -129,7 +99,7 @@ function ModuleForm({ onCancel, onSuccess }) {
         <label>
           Module Year
           {!years ? (
-            <p>Loading records ...</p>
+            <p>{loadingYearsMessage}</p>
           ) : (
             <select
               name="ModuleYearID"
@@ -149,7 +119,7 @@ function ModuleForm({ onCancel, onSuccess }) {
         <label>
           Module Leader
           {!staff ? (
-            <p>Loading records ...</p>
+            <p>{loadingStaffMessage}</p>
           ) : (
             <select
               name="ModuleLeaderID"

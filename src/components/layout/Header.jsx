@@ -10,7 +10,7 @@ function Header() {
   // View ----------------------------------------
   return (
     <header>
-      <h1>useContext Demo</h1>
+      <h1>API Fetch Demo</h1>
       {
         loggedInUser &&
           <p className="welcome">Welcome {loggedInUser.UserFirstname}</p>
